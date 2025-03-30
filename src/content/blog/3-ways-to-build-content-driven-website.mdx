@@ -1,0 +1,73 @@
+---
+title: 3 ways to build content-driven website
+date: 2025-03-30
+summary: Different ways to build a content-driven website
+imageURL: /blog/3-ways-to-create-content-driven-websites/cover-pic.webp
+tags:
+  - Website
+---
+
+import H2 from "../../components/MDXComponents/H2";
+
+Hi there! 👋 Let's explore how to build content-driven websites. Examples of such websites include **blogs, documentation sites, and knowledge bases**. The way you structure these websites depends on the source of your content.
+
+<H2>GitHub as a Content Source</H2>
+
+In this approach, content is stored directly within a Git repository. Content is typically written in **Markdown or MDX** files, and a parser is used to convert them into HTML.
+
+**Advantages:**
+
+- ✅ Developer friendly
+- ✅ Supports MDX, allowing for highly interactive websites. Check out this [example](https://www.joshwcomeau.com/blog/whimsical-animations/)
+
+**Disadvantages**
+
+- 😓 Difficult for non-developers, as content lives within the codebase
+- ⌛ Every change requires a deployment, meaning updates are not real-time
+- 📦 Repository size grows as content increases
+
+**Examples**
+
+- [Astro](https://astro.build/) is framework for building static sites
+- [Content collections](https://github.com/sdorra/content-collections)
+
+<H2>Github with an Admin-panel</H2>
+
+This approach is similar to the previous one, but with an admin panel, allowing content to be published directly from a web interface.
+
+**Advantages:**
+
+- ✅ Friendly for both developers and content creators
+- ✅ Enables the creation of interactive websites
+
+**Disadvantages**
+
+- ⌛ Changes still require a deployment since content is stored in GitHub
+- 📦 Repository size grows as content increases
+
+**Examples**
+
+- [Keystatic](https://keystatic.com/)
+- [Tina CMS](http://tina.io/)
+
+<H2>Dynamic Content Source</H2>
+
+In this approach, content is fetched from a **database** or a **content provider**, enabling **real-time updates**.
+
+**Advantages:**
+
+- ✅ Content creation and publishing are seamless
+- ✅ Scales well for larger websites
+
+**Disadvantages**
+
+- 💰 May incur costs for setup (although free services are available)
+- 🤔 Choosing the right stack can be challenging, as there are many options
+
+**Examples**
+
+- [PayloadCMS](https://payloadcms.com/) - A Next.js-native headless CMS
+- [Sanity](https://www.sanity.io/)
+- [Contentful](https://www.contentful.com/)
+
+Each approach has its own pros and cons, so the right choice depends on your use case. If you're a developer comfortable with Git, GitHub-based approaches might work well. If you need real-time publishing and better scalability, a dynamic CMS is the way to go.
