@@ -97,7 +97,7 @@ const extension = path.extname(imageURL);
     </div>
   </div>
 
-  <Tags list={tags} />
+  {tags && <Tags list={tags} />}
 
   <slot />
 </article>
