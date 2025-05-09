@@ -1,0 +1,102 @@
+---
+title: Why TypeScript?
+date: 2025-05-09
+summary: reasons to learn TypeScript
+imageURL: /blog/why-typescript/cover-pic.webp
+tags:
+  - TypeScript
+---
+
+import H2 from "../../components/MDXComponents/H2";
+
+Hi everyone! 👋 if you're in web-development world you would definitely heard about typescript!
+
+> Typescript is used to add data-types to your variables or functions!
+
+ok 👍
+
+- why do you need that?
+- why not just use javascript?
+
+Well basically `javascript` is a dynamic language, which means you can assign any type of value to a variable.
+
+```javascript
+// we declare a variable with number
+let a = 10;
+// then we can assign a string to it, it works but this might cause some issues!
+a = "hello";
+```
+
+Typescript resolves this issue, here is example:
+
+```typescript
+// we declare a variable with data-type number
+let a: number = 10;
+// then if we try to assign a string to it, we'll get an warning from our editor itself!
+a = "hello"; // ❌ Type 'string' is not assignable to type 'number'.
+```
+
+Yeah i know shifting from `Javascript` to `Typescript` is a bit difficult, it will be annoying to write types for everything, but but! once you get a hang of it. It becomes drug 💊
+
+<H2>Advantages of using Typescript</H2>
+
+1. Code becomes more predictive, you can skip simple data-type mistakes
+
+```typescript
+const [number, setNumber] = useState<number>(0);
+setNumber("hello"); // ❌ Type 'string' is not assignable to type 'SetStateAction<number>'.
+```
+
+2. Handling complex data-structures becomes easier
+
+```typescript
+type User = {
+  name: string;
+  sex: 'male' | 'female';
+}
+
+const users: User[] = []
+
+// this will throw an error
+users.push({
+    name: 'Uppal bal'
+    sex: null
+})
+
+```
+
+3. First class support for auto-suggestions by your editor
+
+<H2>Type-safety without typescript?</H2>
+
+**JsDoc**
+
+You can use `JsDoc` to add types to your javascript code, but it won't be as good as typescript. here is an example:
+
+```javascript
+/**
+ * @param {number} a
+ * @param {number} b
+ * @returns {number}
+ */
+function add(a, b) {
+  return a + b; // if you pass a string to it, you won't get any error
+}
+```
+
+<H2>Bonus</H2>
+
+**End-to-end typesafe**
+
+If your full-stack frameworks like Next.js, Remix etc or using a Monorepo where frontend, backend code written in `javascript` you can use these libraries and get type-safety between your frontend and backend code😘.
+
+- [TPRC](https://trpc.io/)
+- [Hono RPC](https://hono.dev/docs/guides/rpc#rpc)
+
+**Validation**
+
+You can these libraries to validate your data-types on run-time
+
+- [Zod](https://zod.dev/)
+
+That's it for this blog hope you enjoyed it! ✌️Peace
