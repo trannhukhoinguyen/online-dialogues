@@ -1,0 +1,244 @@
+---
+title: Real-time updates in Next.js without WebSockets
+date: 2025-07-06
+summary: A approach we've implemented for real-time updates in Next.js
+imageURL: /blog/realtime-updates-in-nextjs-without-websockets/cover-pic.webp
+tags:
+  - Next.js
+---
+
+import H2 from "../../components/MDXComponents/H2";
+
+Hi there 👋, It’s been a while since I last wrote a blog post—been a bit lazy lately 😅. But today, I want to share an interesting problem we ran into while building a product and how we solved it using a simple yet effective approach!
+
+<H2>Context</H2>
+
+We're building a tool called [dFlow](https://dflow.sh) at my company, I’ll dive deeper into what it is in an upcoming post, but for now, here’s a quick look at the tech stack we’re using:
+
+- [Next.js](https://nextjs.org/)
+- [Server-actions](https://nextjs.org/docs/app/getting-started/updating-data) (Data fetching, mutations)
+- [Next-safe-actions](https://next-safe-action.dev/) (adds type-safe middleware and input validation for server actions)
+- [BullMQ](https://docs.bullmq.io/) (for background job queuing)
+- [Redis](https://redis.io/) (for background job queuing)
+
+We rely on server actions for both server-side data fetching and client-side mutations.
+
+<H2>Problem</H2>
+
+- We're performing database-mutations in our Queues, these queues are separate tasks that run on background.
+- Our database is not real-time, so there're no real-time updates on UI, unless user refreshes the page.
+
+<H2>Solution</H2>
+
+- For showing logs on UI, we're using Redis Pub/Sub to push events to a channel. User will subscribe to that channel and listen for events using Server-sent events (SSE).
+- We can use the same approach to listen to events and update UI right? we can do this but how can we again fetch fresh data from server?
+- As we're using server-side rendering, we can simple do a `router.refresh` on client-side to fetch fresh data from server.
+
+<H2>Example</H2>
+
+- Let's create a redis instance
+
+```ts
+// lib/redis.ts
+import { env } from "env";
+import Redis, { RedisOptions } from "ioredis";
+
+// Redis connection options with better defaults
+const redisOptions: RedisOptions = {
+  enableReadyCheck: false,
+  retryStrategy(times) {
+    // Exponential backoff with max 10 second delay
+    const delay = Math.min(Math.pow(2, times) * 1000, 10000);
+    return delay;
+  },
+  // Connection timeout after 5 seconds
+  connectTimeout: 5000,
+  maxRetriesPerRequest: null,
+};
+
+// Create a function to generate new connections
+export const createRedisClient = () =>
+  new Redis(env.REDIS_URI + "?family=0", redisOptions);
+
+// Dedicated connection for subscriptions
+export const sub = createRedisClient();
+
+// Dedicated connection for publishing
+export const pub = createRedisClient();
+```
+
+- Let's create a utility function to send events to a Redis channel `refresh-channel`
+
+```ts
+// lib/sendEvent.ts
+// This is a utility function to send events to a Redis channel
+// In queues, once database mutation is done, we can call this function to notify the client to refresh the page
+import type Redis from "ioredis";
+
+type SendEventType = {
+  pub: Redis;
+};
+
+export const sendEvent = ({ pub }: SendEventType) => {
+  pub.publish(`refresh-channel`, JSON.stringify({ refresh: true }));
+};
+```
+
+- Let's create a route handler for SSE connection and listen for events from Redis
+
+```ts
+// api/refresh/route.ts
+import { NextRequest } from "next/server";
+
+import { sub } from "@/lib/redis";
+
+export async function GET(req: NextRequest) {
+  // encoder is used to convert strings to Uint8Array for streaming
+  const encoder = new TextEncoder();
+
+  // we create a duplicate subscriber to avoid conflicts with the main Redis connection
+  const duplicateSubscriber = sub.duplicate();
+
+  // This is a ReadableStream that will be used to send events to the client
+  const stream = new ReadableStream({
+    start(controller) {
+      // This function sends data to the client
+      const sendEvent = (channel: string, message: string) => {
+        console.log(`Got message ${channel}-channel ${message}`);
+        controller.enqueue(encoder.encode(`data: ${message}\n\n`));
+      };
+
+      // Subscribe to a Redis channel
+      duplicateSubscriber.subscribe(`refresh-channel`, err => {
+        if (err) console.error("Redis Subscribe Error:", err);
+      });
+
+      duplicateSubscriber.on("message", sendEvent);
+
+      duplicateSubscriber.on("error", err => {
+        console.log("error", err.message);
+      });
+
+      duplicateSubscriber.on("connect", () => {
+        console.log(`Connected to refresh-channel`);
+      });
+
+      // Use a separate client for the keepalive ping
+      const keepAlive = setInterval(() => {
+        // Don't use the subscription client for anything other than subscription
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ keepalive: true })}\n\n`)
+        );
+      }, 29000);
+
+      req.signal.addEventListener("abort", () => {
+        duplicateSubscriber.unsubscribe(`refresh-channel`);
+        duplicateSubscriber.off("message", sendEvent);
+        clearInterval(keepAlive);
+        // Close the connection when done
+        duplicateSubscriber.quit().catch(() => {});
+        controller.close();
+      });
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+}
+```
+
+- Let's create a client-side component to listen for events and refresh the page
+
+```tsx
+// providers/RefreshProvider.tsx
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useTransition } from "react";
+import { toast } from "sonner";
+
+const RefreshProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  // Initializing a SSE for listening changes to update UI
+  useEffect(() => {
+    const eventSource = new EventSource(`/api/refresh`);
+
+    eventSource.onmessage = event => {
+      const data = JSON.parse(event.data) ?? {};
+
+      if (data?.refresh) {
+        // Starting react transition hook
+        startTransition(() => {
+          // Refreshing the page to fetch latest data
+          router.refresh();
+        });
+      }
+    };
+
+    // On component unmount close the event source
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  }, []);
+
+  // If reload is triggered showing a toast
+  useEffect(() => {
+    let toastTimeout: NodeJS.Timeout | null = null;
+
+    if (isPending) {
+      toast.loading("Syncing with latest changes...", {
+        id: "refresh-toast",
+      });
+    } else {
+      toastTimeout = setTimeout(() => {
+        toast.dismiss("refresh-toast");
+      }, 3000);
+    }
+
+    return () => {
+      if (toastTimeout) {
+        clearTimeout(toastTimeout);
+      }
+    };
+  }, [isPending]);
+
+  return <>{children}</>;
+};
+
+export default RefreshProvider;
+```
+
+- Let's wrap our `layout.tsx` with `RefreshProvider`
+
+```tsx
+// layout.tsx
+import RefreshProvider from "@/providers/RefreshProvider";
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <RefreshProvider>{children}</RefreshProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+- First we'll connect to `/api/refresh` endpoint to listen for events.
+- Then we'll use `sendEvent` utility function to send events to the channel.
+- Finally, we'll use `router.refresh` to fetch fresh data from server.
+
+That's how we've achieved real-time updates in Next.js without using WebSockets. do you know any other way to achieve this? let me know in the comments below. Thank you peace✌️

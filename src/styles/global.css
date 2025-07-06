@@ -34,7 +34,7 @@
 
 @layer utilities {
   .tag {
-    @apply rounded-md bg-primary/15 px-2 py-1 text-sm text-primary;
+    @apply rounded-md bg-primary/15 px-2 py-1 text-sm text-primary backdrop-blur-sm;
   }
 }
 
