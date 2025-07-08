@@ -30,6 +30,6 @@ export default defineConfig({
       exclude: ["@resvg/resvg-js"],
     },
   },
-
-   adapter: vercel(),
+  output: "server",
+  adapter: vercel(),
 });

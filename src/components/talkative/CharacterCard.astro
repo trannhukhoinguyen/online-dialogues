@@ -9,7 +9,7 @@ const { character } = Astro.props;
 ---
 
 <a
-  href={`/${character.id}`}
+  href={`/${character?.id}`}
   class="character"
   style={`--image: url('${character.data.image.src}');`}
   data-nationality={character.data.nationality}

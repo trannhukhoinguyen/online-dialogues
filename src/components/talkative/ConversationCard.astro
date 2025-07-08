@@ -8,7 +8,7 @@ type Props = {
 const { conversation } = Astro.props;
 ---
 
-<a class="conversation-card" href={`/${conversation.data.character.id}/conversations/${conversation.id}`}>
+<a class="conversation-card" href={`/${conversation.data.character?.id}/conversations/${conversation?.id}`}>
   <div>
     <img
       class="fade-in"

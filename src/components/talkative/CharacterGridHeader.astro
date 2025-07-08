@@ -2,7 +2,7 @@
 import TextSlider from "./TextSlider.astro";
 import Separator from "./Separator.astro";
 import Search from "./Search.astro";
-import Cross from "../assets/images/cross.svg";
+import Cross from "../../assets/images/cross.svg";
 import type {CollectionEntry} from "astro:content";
 
 type Props = {
@@ -74,4 +74,4 @@ const allFields = Array.from(new Set(characters?.map(character => character?.dat
     }
   }
 </style>
-<script src="../scripts/gridActions.js"></script>
+<script src="../../scripts/gridActions.js"></script>

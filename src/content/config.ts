@@ -1,4 +1,4 @@
-import { defineCollection, reference, z } from 'astro:content';
+import { defineCollection, reference, z } from "astro:content";
 import { glob } from 'astro/loaders';
 
 const blog = defineCollection({
@@ -40,5 +40,4 @@ const conversations = defineCollection({
     character: reference('characters'),
   }),
 });
-
 export const collections = { blog, characters, conversations };
