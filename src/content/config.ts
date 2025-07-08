@@ -1,4 +1,5 @@
-import { defineCollection, z } from "astro:content";
+import { defineCollection, reference, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
 const blog = defineCollection({
   type: "content",
@@ -13,4 +14,31 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+const characters = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: "./src/data/characters" }),
+  schema: z.object({
+    name: z.string(),
+    nationality: z.string(),
+    fields: z.array(z.string()),
+    image: z.object({
+      src: z.string(),
+      alt: z.string(),
+    }),
+  }),
+});
+
+const conversations = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: "./src/data/conversations" }),
+  schema: z.object({
+    name: z.string(),
+    topic: z.string(),
+    image: z.object({
+      src: z.string(),
+      alt: z.string(),
+    }),
+    sentences: z.array(z.string()),
+    character: reference('characters'),
+  }),
+});
+
+export const collections = { blog, characters, conversations };

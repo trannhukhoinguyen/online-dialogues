@@ -1,0 +1,77 @@
+---
+import TextSlider from "./TextSlider.astro";
+import Separator from "./Separator.astro";
+import Search from "./Search.astro";
+import Cross from "../assets/images/cross.svg";
+import type {CollectionEntry} from "astro:content";
+
+type Props = {
+  charactersTotal: number;
+  characters: CollectionEntry<"characters">[];
+};
+
+const { characters, charactersTotal } = Astro.props;
+const allNationalities = Array.from(new Set(characters?.map(character => character?.data?.nationality)));
+const allFields = Array.from(new Set(characters?.map(character => character?.data?.fields)?.flat()));
+---
+
+<header class="title-header title-header--initial">
+  <h2><TextSlider content="Characters" /></h2>
+  <div>
+    <button data-sort><TextSlider content="Sort" /></button>
+    <button data-shuffle><TextSlider content="Shuffle" /></button>
+    <div>
+      <button data-search class="search"><TextSlider content="Search" /></button>
+      <button data-clear class="clear hidden" aria-label="Clear search">
+        <Cross width={14} height={14} />
+      </button>
+    </div>
+  </div>
+  <div>
+    <button data-refineUk>UK</button>
+    <button data-refineUs>US</button>
+  </div>
+  <div>
+    <button data-refineEconomic>Economic</button>
+    <button data-refinePolitic>Politic</button>
+    <button data-refineSoccer>Soccer</button>
+  </div>
+  <span><TextSlider content={charactersTotal} /></span>
+</header>
+
+<Separator />
+<Search />
+
+<style>
+  div {
+    display: flex;
+    list-style: none;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+  }
+  div:has(> .search) {
+    position: relative;
+  }
+  div:has(> .search--active) {
+    margin-left: 1rem;
+  }
+  div:has(> .search--active)::before {
+    pointer-events: none;
+    content: "";
+    position: absolute;
+    left: -1rem;
+    right: -1rem;
+    top: -0.5rem;
+    bottom: -0.5rem;
+    border: 1px solid;
+    border-radius: 2rem;
+  }
+  .search--active {
+    &:focus-visible {
+      color: inherit;
+    }
+  }
+</style>
+<script src="../scripts/gridActions.js"></script>

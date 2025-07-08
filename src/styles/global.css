@@ -21,6 +21,18 @@
     --primary: 32 95 44;
     --background: 60 5 96;
     --text: 20 14 4;
+
+    --color-text: #000;
+    --color-text-alt: #6a6a6a;
+    --color-faded: #c9c9c9;
+    --color-bg: #fff;
+    --border-color: #ccc;
+    --color-link: #000;
+    --color-link-hover: #999;
+    --color-placeholder: #f8f8f8;
+    --font-size-s: 0.85rem;
+    --font-size-l: clamp(1.25rem, 3vw, 1.75rem);
+    --font-size-xl: clamp(1.5rem, 5vw, 2.75rem);
   }
 
   html {
