@@ -7,10 +7,7 @@ const currentPath = Astro.url.pathname;
 // Define a map of routes
 const routes = {
   "/": "Home",
-  "/connection/": "Connection",
-  "/contexts/": "Contexts",
-  "/grammar/": "Grammar",
-  "/vocabulary/": "Vocabulary",
+  "/talkative/": "Talkative",
 };
 // Determine the active route
 const activeRoute = routes[currentPath] || null;
@@ -25,27 +22,9 @@ const activeRoute = routes[currentPath] || null;
   <ul>
     <li>
       <a
-        href="/connection/"
-        class={activeRoute === "Connection" ? "current" : ""}
-        data-astro-prefetch><TextSlider content="Connection" /></a>
-    </li>
-    <li>
-      <a
-        href="/contexts/"
-        class={activeRoute === "Contexts" ? "current" : ""}
-        data-astro-prefetch><TextSlider content="Contexts" /></a>
-    </li>
-    <li>
-      <a
-        href="/grammar/"
-        class={activeRoute === "Grammar" ? "current" : ""}
-        data-astro-prefetch><TextSlider content="Grammar" /></a>
-    </li>
-    <li>
-      <a
-        href="/vocabulary/"
-        class={activeRoute === "Vocabulary" ? "current" : ""}
-        data-astro-prefetch><TextSlider content="Vocabulary" /></a>
+        href="/talkative/"
+        class={activeRoute === "Talkative" ? "current" : ""}
+        data-astro-prefetch><TextSlider content="Talkative" /></a>
     </li>
   </ul>
 </header>
